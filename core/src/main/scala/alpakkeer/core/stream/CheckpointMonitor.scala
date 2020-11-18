@@ -40,6 +40,9 @@ final class CheckpointMonitor[A] extends GraphStage[FanOutShape2[A, A, Stats]] {
     private var totalPushPullLatencySinceLastStatsPull = 0L
     private var elementsSinceLastPull = 0L
 
+    // Indicates that the upstream finished, but we wait for a last pull from stats before stopping
+    private var shouldShutdown = false
+
     override def preStart(): Unit = {
       val now = System.nanoTime()
       lastStatsPull = now
@@ -69,6 +72,10 @@ final class CheckpointMonitor[A] extends GraphStage[FanOutShape2[A, A, Stats]] {
         lastPushed = System.nanoTime()
         totalPullPushLatencySinceLastStatsPull += (lastPushed - lastPulled)
       }
+
+      override def onUpstreamFinish(): Unit = {
+        shouldShutdown = true
+      }
     })
 
     setHandler(out, new OutHandler {
@@ -81,7 +88,12 @@ final class CheckpointMonitor[A] extends GraphStage[FanOutShape2[A, A, Stats]] {
     })
 
     setHandler(statsOut, new OutHandler {
-      def onPull(): Unit = pushStats()
+      def onPull(): Unit = {
+        pushStats()
+        if(shouldShutdown) {
+          completeStage()
+        }
+      }
 
       override def onDownstreamFinish(cause: Throwable): Unit = {}
     })
