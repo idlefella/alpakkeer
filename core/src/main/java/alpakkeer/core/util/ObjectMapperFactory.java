@@ -1,6 +1,8 @@
 package alpakkeer.core.util;
 
+import alpakkeer.config.ObjectMapperConfiguration;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -19,7 +21,11 @@ public final class ObjectMapperFactory {
         return new ObjectMapperFactory();
     }
 
-    public ObjectMapper create(boolean pretty) {
+    public ObjectMapper create() {
+        return create(ObjectMapperConfiguration.apply());
+    }
+
+    public ObjectMapper create(ObjectMapperConfiguration configuration) {
         ObjectMapper om = new ObjectMapper();
         om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         om.registerModule(new JavaTimeModule());
@@ -27,12 +33,12 @@ public final class ObjectMapperFactory {
         om.registerModule(new DefaultScalaModule());
 
         om.getSerializationConfig()
-          .getDefaultVisibilityChecker()
-          .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-          .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-          .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-          .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE)
-          .withCreatorVisibility(JsonAutoDetect.Visibility.ANY);
+                .getDefaultVisibilityChecker()
+                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY);
 
         om.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         om.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
@@ -43,17 +49,17 @@ public final class ObjectMapperFactory {
         SimpleModule module = new SimpleModule();
         om.registerModule(module);
 
-        if (pretty) {
-            om.enable(SerializationFeature.INDENT_OUTPUT);
-        }
+        // Apply configuration
+        configuration.getSerializationFeatures().forEach(serializationFeature -> {
+            om.enable(SerializationFeature.valueOf(serializationFeature));
+        });
+        configuration.getSerializationInclusions().forEach(serializationInclusion ->
+                om.setSerializationInclusion(JsonInclude.Include.valueOf(serializationInclusion))
+        );
 
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
         return om;
-    }
-
-    public ObjectMapper create() {
-        return create(false);
     }
 
 }

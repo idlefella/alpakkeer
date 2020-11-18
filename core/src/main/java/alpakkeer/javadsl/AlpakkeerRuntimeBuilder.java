@@ -98,7 +98,7 @@ public final class AlpakkeerRuntimeBuilder {
 
    public AlpakkeerRuntime build(AlpakkeerConfiguration config) {
       var system = Optional.ofNullable(this.system).orElseGet(() -> ActorSystem.apply("alpakkeer"));
-      var objectMapper = Optional.ofNullable(this.objectMapper).orElseGet(() -> ObjectMapperFactory.apply().create(true));
+      var objectMapper = Optional.ofNullable(this.objectMapper).orElseGet(() -> ObjectMapperFactory.apply().create(config.getObjectMapperConfiguration()));
       var javalin = Optional.ofNullable(app).orElseGet(() -> Javalin
          .create(cfg -> {
             cfg.showJavalinBanner = false;

@@ -22,14 +22,6 @@ public final class LoggingJobMonitor<P, C> implements JobMonitor<P, C> {
 
    private final ObjectMapper om;
 
-   public static <P, C> LoggingJobMonitor<P, C> apply(String name) {
-      return apply(name, LoggerFactory.getLogger(String.format("alpakkeer.jobs.%s", name)), ObjectMapperFactory.apply().create(true));
-   }
-
-   public static <P, C> LoggingJobMonitor<P, C> apply(String name, Logger logger) {
-      return apply(name, logger, ObjectMapperFactory.apply().create(true));
-   }
-
    public static <P, C> LoggingJobMonitor<P, C> apply(String name, ObjectMapper om) {
       return apply(name, LoggerFactory.getLogger(String.format("alpakkeer.jobs.%s", name)), om);
    }

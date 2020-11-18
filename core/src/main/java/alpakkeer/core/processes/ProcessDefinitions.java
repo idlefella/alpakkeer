@@ -6,15 +6,16 @@ import akka.japi.function.Function;
 import akka.japi.function.Procedure2;
 import akka.stream.UniqueKillSwitch;
 import akka.stream.javadsl.RunnableGraph;
-import alpakkeer.javadsl.Alpakkeer;
-import alpakkeer.javadsl.AlpakkeerRuntime;
 import alpakkeer.config.ProcessConfiguration;
 import alpakkeer.core.jobs.monitor.LoggingJobMonitor;
 import alpakkeer.core.processes.monitor.LoggingProcessMonitor;
 import alpakkeer.core.processes.monitor.ProcessMonitor;
 import alpakkeer.core.processes.monitor.ProcessMonitorGroup;
+import alpakkeer.core.processes.monitor.PrometheusProcessMonitor;
 import alpakkeer.core.util.Operators;
 import alpakkeer.core.util.Strings;
+import alpakkeer.javadsl.Alpakkeer;
+import alpakkeer.javadsl.AlpakkeerRuntime;
 import com.google.common.collect.Lists;
 import io.javalin.Javalin;
 import lombok.AccessLevel;
@@ -242,10 +243,15 @@ public final class ProcessDefinitions {
 
          for (String m : configuration.getMonitors()) {
             // TODO: Add more monitor types for processes
-            if ("logging".equals(m)) {
-               next = next.withLoggingMonitor();
-            } else {
-               LOG.warn("Unknown monitor type `{}` configured for process `{}`", m, name);
+            switch (m) {
+               case "logging":
+                  next = next.withLoggingMonitor();
+                  break;
+               case "prometheus":
+                  next = next.withPrometheusMonitor();
+                  break;
+               default:
+                  LOG.warn("Unknown monitor type `{}` configured for process `{}`", m, name);
             }
          }
 
@@ -313,6 +319,16 @@ public final class ProcessDefinitions {
        */
       public ProcessDefinitionBuilder withLoggingMonitor() {
          return withMonitor(LoggingProcessMonitor.apply(name, logger));
+      }
+
+      /**
+       * Enables a {@link PrometheusProcessMonitor} for the process. The monitor will log information about the executions of the process
+       * in Prometheus Metrics.
+       *
+       * @return The current instance of the builder
+       */
+      public ProcessDefinitionBuilder withPrometheusMonitor() {
+         return withMonitor(PrometheusProcessMonitor.apply(name, runtime.getCollectorRegistry()));
       }
 
       /**

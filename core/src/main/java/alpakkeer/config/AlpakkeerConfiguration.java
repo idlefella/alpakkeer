@@ -36,6 +36,9 @@ public final class AlpakkeerConfiguration {
 
    private final MessagingConfiguration messaging;
 
+   @Value("object-mapper")
+   private final ObjectMapperConfiguration objectMapperConfiguration;
+
    private final List<JobConfiguration> jobs;
 
    private final List<ProcessConfiguration> processes;

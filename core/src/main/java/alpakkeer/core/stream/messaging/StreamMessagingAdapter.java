@@ -18,6 +18,10 @@ import java.util.concurrent.CompletionStage;
 
 public interface StreamMessagingAdapter {
 
+   default String getDefaultGroupId() {
+      return "default";
+   }
+
    /**
     * Puts a single record into a messaging topic.
     *
@@ -142,7 +146,7 @@ public interface StreamMessagingAdapter {
     * @return An optional record wrapped in its envelope
     */
    default <T> CompletionStage<Optional<Record<T, CommittableRecordContext>>> getNextRecord(String topic, Class<T> recordType) {
-      return getNextRecord(topic, recordType, "default");
+      return getNextRecord(topic, recordType, getDefaultGroupId());
    }
 
 
@@ -166,7 +170,7 @@ public interface StreamMessagingAdapter {
     * @return An Akka Streams source of records
     */
    default <T> Source<Record<T, CommittableRecordContext>, NotUsed> recordsSource(String topic, Class<T> recordType) {
-      return recordsSource(topic, recordType, "default");
+      return recordsSource(topic, recordType, getDefaultGroupId());
    }
 
 }

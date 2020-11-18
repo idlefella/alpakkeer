@@ -44,6 +44,11 @@ public final class PlainKafkaStreamMessagingAdapter implements StreamMessagingAd
    private final KafkaMessagingAdapterConfiguration configuration;
 
    @Override
+   public String getDefaultGroupId() {
+      return configuration.getConsumer().getString("group-id");
+   }
+
+   @Override
    public <R, C extends RecordContext> CompletionStage<Done> putRecord(String topic, Record<R, C> record) {
       return Source
          .single(record)
