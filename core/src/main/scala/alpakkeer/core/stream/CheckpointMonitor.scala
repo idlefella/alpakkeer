@@ -80,10 +80,11 @@ final class CheckpointMonitor[A] extends GraphStage[FanOutShape2[A, A, Stats]] {
 
     setHandler(out, new OutHandler {
       def onPull(): Unit = {
-        pull(in)
-
-        lastPulled = System.nanoTime()
-        totalPushPullLatencySinceLastStatsPull += (lastPulled - lastPushed)
+        if(!shouldShutdown) {
+          pull(in)
+          lastPulled = System.nanoTime()
+          totalPushPullLatencySinceLastStatsPull += (lastPulled - lastPushed)
+        }
       }
     })
 
