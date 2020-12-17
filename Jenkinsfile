@@ -10,6 +10,9 @@ pipeline {
         REPO_NAME="alpakkeer"
         SONARQUBE_HOST="http://sonarqubeintg.suvanet.ch:9000"
         SONARQUBE_TOKEN=credentials('sonarqube-intg-token')
+        HTTPS_PROXY = credentials('proxy')
+        HTTP_PROXY = credentials('proxy')
+        NO_PROXY = "localhost,127.0.0.0/8,10.0.0.0/8,.suvanet.ch"
     }
     stages {
         stage('build') {
