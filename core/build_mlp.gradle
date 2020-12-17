@@ -169,11 +169,9 @@ publishing {
     }
     repositories {
         maven {
+            name = "nexus"
             url = "http://swwnexusp0.suvanet.ch:18081/nexus/repository/mlp-maven-repo"
-            credentials {
-                username System.getenv('NEXUS_USERNAME')
-                password System.getenv('NEXUS_PASSWORD')
-            }
+            credentials(PasswordCredentials)
         }
 //        mavenLocal()
 //        ivy {
