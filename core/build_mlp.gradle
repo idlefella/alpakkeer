@@ -105,8 +105,8 @@ artifacts {
 }
 
 java {
-    //withJavadocJar()
-    //withSourcesJar()
+    withJavadocJar()
+    withSourcesJar()
 }
 
 //signing {
