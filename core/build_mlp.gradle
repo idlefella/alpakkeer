@@ -1,0 +1,184 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url = "http://dl.bintray.com/palantir/releases"
+        }
+    }
+    dependencies {
+        classpath 'com.palantir:gradle-gitsemver:0.6.0'
+    }
+}
+
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '3.3.0'
+    id 'java-library'
+    id 'maven'
+    id 'maven-publish'
+    id 'scala'
+    id 'signing'
+    id 'ivy-publish'
+}
+
+def versions = [
+    akka: "2.6.4",
+    alpakka: "2.0.1",
+    scala: "2.13"
+]
+
+group = "io.github.cokeschlumpf"
+archivesBaseName = "alpakkeer-core"
+apply plugin: 'gitsemver'
+version semverVersion()
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api group: 'com.typesafe.akka', name: "akka-actor-typed_${versions.scala}", version: versions.akka
+    api group: 'com.typesafe.akka', name: "akka-stream_${versions.scala}", version: versions.akka
+
+    api group: 'com.lightbend.akka', name: "akka-stream-alpakka-file_${versions.scala}", version: versions.alpakka
+    api group: 'com.typesafe.akka', name: "akka-stream-kafka_${versions.scala}", version: versions.alpakka
+    api group: 'com.lightbend.akka', name: "akka-stream-alpakka-slick_${versions.scala}", version: versions.alpakka
+
+
+    api group: 'cc.vileda', name: 'kotlin-openapi3-dsl', version: '0.20.2'
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.0'
+    api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jdk8', version: '2.11.0'
+    api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.0'
+    api group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.11.0'
+    api group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.13', version: '2.11.0'
+    api group: 'com.google.guava', name: 'guava', version: '27.0-jre'
+    api group: 'io.javalin', name: 'javalin', version: '3.8.0'
+    api group: 'io.pebbletemplates', name: 'pebble', version: '3.1.3'
+    api group: 'io.prometheus', name: 'simpleclient', version: '0.9.0'
+    api group: 'io.prometheus', name: 'simpleclient_common', version: '0.9.0'
+    api group: 'io.swagger.core.v3', name: 'swagger-core', version: '2.0.9'
+    api group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    api group: 'org.postgresql', name: 'postgresql', version: '42.2.15'
+    api group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
+    api group: 'org.webjars', name: 'swagger-ui', version: '3.24.3'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = []
+        }
+
+        scala {
+            srcDirs = ['src/main/scala', 'src/main/java']
+        }
+    }
+
+    test {
+        java {
+            srcDirs = []
+        }
+
+        scala {
+            srcDirs = ['src/test/scala', 'src/test/java']
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    archiveClassifier.set('javadoc')
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+java {
+    //withJavadocJar()
+    //withSourcesJar()
+}
+
+//signing {
+//    sign configurations.archives
+//}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: project.findProperty("ossrh.user"), password: project.findProperty("ossrh.password"))
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: project.findProperty("ossrh.user"), password: project.findProperty("ossrh.password"))
+            }
+
+            pom.project {
+                name 'alpakkeer-core'
+                packaging 'jar'
+                description 'Alpakkeer is an opinionated toolkit to build, run and monitor applications based on Akka Streams and Alpakka. '
+                url 'https://cokeschlumpf.github.io/alpakkeer'
+
+                scm {
+                    connection 'scm:git:https://github.com/cokeSchlumpf/alpakkeer.git'
+                    developerConnection 'scm:git:https://github.com/cokeSchlumpf/alpakkeer.git'
+                    url 'https://github.com/cokeSchlumpf/alpakkeer.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'cokeSchlumpf'
+                        name 'Michael Wellner'
+                        email 'michael.wellner@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'io.github.cokeschlumpf'
+            artifactId = 'alpakkeer-core'
+            version = "${version}"
+            
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = "http://swwnexusp0.suvanet.ch:18081/nexus/repository/mlp-maven-repo"
+            credentials {
+                username System.getenv('NEXUS_USERNAME')
+                password System.getenv('NEXUS_PASSWORD')
+            }
+        }
+//        mavenLocal()
+//        ivy {
+//            url = "${System.properties['user.home']}/.ivy2/local"
+//        }
+    }
+}
+
