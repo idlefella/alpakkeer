@@ -35,7 +35,7 @@ public final class JobStreamBuilder<P, C> implements StreamBuilder {
       C context) {
 
       var monitoring = StreamMonitoringAdapter.apply(monitor, executionId);
-      var sb = StreamBuilders.common(monitoring, runtime, logger);
+      var sb = StreamBuilders.common(monitoring, runtime, logger, name);
       return apply(sb, name, executionId, properties, context);
    }
 
@@ -122,5 +122,10 @@ public final class JobStreamBuilder<P, C> implements StreamBuilder {
    @Override
    public Logger logger() {
       return streamBuilder.getLogger();
+   }
+
+   @Override
+   public String getName() {
+      return name;
    }
 }
