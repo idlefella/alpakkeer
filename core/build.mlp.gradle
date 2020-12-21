@@ -109,54 +109,6 @@ java {
     withSourcesJar()
 }
 
-//signing {
-//    sign configurations.archives
-//}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: project.findProperty("ossrh.user"), password: project.findProperty("ossrh.password"))
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: project.findProperty("ossrh.user"), password: project.findProperty("ossrh.password"))
-            }
-
-            pom.project {
-                name 'alpakkeer-core'
-                packaging 'jar'
-                description 'Alpakkeer is an opinionated toolkit to build, run and monitor applications based on Akka Streams and Alpakka. '
-                url 'https://cokeschlumpf.github.io/alpakkeer'
-
-                scm {
-                    connection 'scm:git:https://github.com/cokeSchlumpf/alpakkeer.git'
-                    developerConnection 'scm:git:https://github.com/cokeSchlumpf/alpakkeer.git'
-                    url 'https://github.com/cokeSchlumpf/alpakkeer.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'cokeSchlumpf'
-                        name 'Michael Wellner'
-                        email 'michael.wellner@gmail.com'
-                    }
-                }
-            }
-        }
-    }
-}
-
 publishing {
     publications {
         maven(MavenPublication) {
@@ -179,4 +131,3 @@ publishing {
 //        }
     }
 }
-

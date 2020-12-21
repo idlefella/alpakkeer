@@ -13,13 +13,13 @@ pipeline {
         HTTPS_PROXY = credentials('proxy')
         HTTP_PROXY = credentials('proxy')
         NO_PROXY = "localhost,127.0.0.0/8,10.0.0.0/8,.suvanet.ch"
+        GRADLE_PROPERTIES_TMP = credentials("gradle.properties")
     }
     stages {
         stage('build') {
             steps {
-                dir("core") {
-                    sh 'gradle -b build_mlp.gradle build'
-                }
+                sh "cp $GRADLE_PROPERTIES_TMP ./gradle.properties"
+                sh 'gradle -c settings.mlp.gradle build'
             }
         }
         stage('sonarqube') {
@@ -34,9 +34,7 @@ pipeline {
         }
         stage('deploy') {
             steps {
-                dir("core") {
-                    sh 'gradle -b build_mlp.gradle publish'
-                }
+                sh 'gradle -c settings.mlp.gradle publish'
             }
         }
     }
