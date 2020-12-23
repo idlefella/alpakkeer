@@ -1,5 +1,5 @@
 rootProject.name = 'alpakkeer'
+
 include 'core'
 // include 'scaladsl'
 include 'testkit'
-project(":core")

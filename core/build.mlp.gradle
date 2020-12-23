@@ -13,11 +13,8 @@ buildscript {
 plugins {
     id 'io.franzbecker.gradle-lombok' version '3.3.0'
     id 'java-library'
-    id 'maven'
     id 'maven-publish'
     id 'scala'
-    id 'signing'
-    id 'ivy-publish'
 }
 
 def versions = [
@@ -111,7 +108,7 @@ java {
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             groupId = 'io.github.cokeschlumpf'
             artifactId = 'alpakkeer-core'
             version = "${version}"
@@ -125,9 +122,5 @@ publishing {
             url = "http://swwnexusp0.suvanet.ch:18081/nexus/repository/mlp-maven-repo"
             credentials(PasswordCredentials)
         }
-//        mavenLocal()
-//        ivy {
-//            url = "${System.properties['user.home']}/.ivy2/local"
-//        }
     }
 }
