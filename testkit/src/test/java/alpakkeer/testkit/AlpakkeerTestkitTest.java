@@ -8,13 +8,12 @@ import org.junit.Test;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 
 public class AlpakkeerTestkitTest {
@@ -22,7 +21,8 @@ public class AlpakkeerTestkitTest {
     private JobDefinitions.JobSettingsConfiguration<String, List<String>> getTestJob(JobDefinitions jobs) {
         return jobs
                 .create("testjob", "defaultProperty", List.of("test"))
-                .runGraph(jb -> Source.single(jb.getProperties()).via(jb.monitoring().createCheckpointMonitor("testCheckpointMonitor", Duration.of(1, ChronoUnit.SECONDS))).toMat(Sink.seq(), Keep.right()));
+                .runGraph(jb -> Source.single(jb.getProperties()).via(jb.monitoring().createCheckpointMonitor("testCheckpointMonitor", Duration.of(1, ChronoUnit.SECONDS))).toMat(Sink.seq(), Keep.right()))
+                .withPrometheusMonitor();
     }
 
     @Test
@@ -31,5 +31,11 @@ public class AlpakkeerTestkitTest {
         var x = result.toCompletableFuture().get(60, TimeUnit.SECONDS);
         var y = x.getCompletion().toCompletableFuture().get();
         assertEquals(y.get(), List.of("hello"));
+    }
+
+    @Test
+    public void runJobAndWaitTest() throws ExecutionException, InterruptedException, TimeoutException {
+        var result = AlpakkeerTestkit.runAndWaitForJob(this::getTestJob, "hello", List.of("test"));
+        assertEquals(result.get(), List.of("hello"));
     }
 }
