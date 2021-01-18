@@ -10,10 +10,11 @@ import alpakkeer.core.jobs.JobHandle;
 import alpakkeer.core.jobs.context.InMemoryContextStore;
 import alpakkeer.core.processes.ProcessDefinitions;
 import alpakkeer.core.processes.ProcessHandle;
-import alpakkeer.core.stream.messaging.InMemoryStreamMessagingAdapter;
 import alpakkeer.core.stream.messaging.StreamMessagingAdapter;
+import alpakkeer.core.stream.messaging.StreamMessagingAdapters;
 import alpakkeer.core.util.ObjectMapperFactory;
 import alpakkeer.core.util.Operators;
+import alpakkeer.javadsl.AlpakkeerBaseRuntime;
 import alpakkeer.javadsl.AlpakkeerRuntime;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -36,7 +37,9 @@ public class AlpakkeerTestkit {
 
     static public Materializer materializer = Materializer.matFromSystem(actorSystem);
 
-    static public StreamMessagingAdapter streamMessagingAdapter = InMemoryStreamMessagingAdapter.apply(objectMapper);
+    static private AlpakkeerBaseRuntime baseRuntime = AlpakkeerBaseRuntime.apply(null, alpkakkeerConfiguration, actorSystem, objectMapper);
+
+    static public StreamMessagingAdapter streamMessagingAdapter = StreamMessagingAdapters.createFromConfiguration(baseRuntime);
 
     static public AlpakkeerRuntime alpakkeerRuntime = new TestkitAlpakkeerRuntime(
             null,
