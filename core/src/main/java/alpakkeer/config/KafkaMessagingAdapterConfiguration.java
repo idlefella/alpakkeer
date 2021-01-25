@@ -17,6 +17,9 @@ public final class KafkaMessagingAdapterConfiguration {
    @Value("bootstrap-server")
    private String bootstrapServer;
 
+   @Value("committer")
+   private Config committer;
+
    @Value("consumer")
    private Config consumer;
 
