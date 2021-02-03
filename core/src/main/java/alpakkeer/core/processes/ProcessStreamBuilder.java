@@ -16,15 +16,18 @@ public class ProcessStreamBuilder implements StreamBuilder {
 
    private final String executionId;
 
+   private final String name;
+
    public static ProcessStreamBuilder apply(
       AlpakkeerRuntime runtime,
       ProcessMonitor monitor,
       String executionId,
-      Logger logger) {
+      Logger logger,
+      String name) {
 
       var monitoring = StreamMonitoringAdapter.apply(monitor, executionId);
-      var sb = StreamBuilders.common(monitoring, runtime, logger);
-      return apply(sb, executionId);
+      var sb = StreamBuilders.common(monitoring, runtime, logger, name);
+      return apply(sb, executionId, name);
    }
 
 
@@ -79,5 +82,10 @@ public class ProcessStreamBuilder implements StreamBuilder {
    @Override
    public Logger logger() {
       return sb.logger();
+   }
+
+   @Override
+   public String getName() {
+      return name;
    }
 }

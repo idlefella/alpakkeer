@@ -417,7 +417,7 @@ public final class ProcessDefinitions {
 
       @Override
       public CompletionStage<ProcessHandle> run(String executionId) {
-         return Operators.suppressExceptions(() -> runner.apply(ProcessStreamBuilder.apply(runtime, getMonitors(), executionId, logger)));
+         return Operators.suppressExceptions(() -> runner.apply(ProcessStreamBuilder.apply(runtime, getMonitors(), executionId, logger, name)));
       }
 
    }

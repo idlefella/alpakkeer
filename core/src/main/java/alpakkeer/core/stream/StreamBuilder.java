@@ -22,4 +22,10 @@ public interface StreamBuilder {
 
    Logger logger();
 
+   /**
+    * Get the name of the stream
+    * @return The name
+    */
+   String getName();
+
 }

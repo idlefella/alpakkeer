@@ -15,8 +15,8 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor(staticName = "apply")
-public final class AlpakkeerRuntime {
+@AllArgsConstructor()
+public class AlpakkeerRuntime {
 
    Javalin app;
 

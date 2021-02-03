@@ -119,7 +119,7 @@ public final class AlpakkeerRuntimeBuilder {
          .orElseGet(() -> ContextStores::createFromConfiguration)
          .apply(baseRuntime));
 
-      return AlpakkeerRuntime.apply(
+      return new AlpakkeerRuntime(
          javalin,
          config,
          system,

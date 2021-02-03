@@ -3,7 +3,9 @@ package alpakkeer;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
+import alpakkeer.core.util.ObjectMapperFactory;
 import alpakkeer.javadsl.Alpakkeer;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 
@@ -102,6 +104,13 @@ public class AlpakkeerTest {
               .get();
 
       alpakkeer.stop().toCompletableFuture().get();
+   }
+
+   @Test
+   public void exceptionSerialization() throws JsonProcessingException {
+      var objectMapper = ObjectMapperFactory.apply().create();
+      var myException = new Exception("Blablabla");
+      objectMapper.writeValueAsString(myException);
    }
 
 }

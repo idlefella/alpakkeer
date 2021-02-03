@@ -3,10 +3,7 @@ package alpakkeer.core.stream.messaging;
 import akka.Done;
 import akka.NotUsed;
 import akka.actor.ActorSystem;
-import akka.kafka.ConsumerSettings;
-import akka.kafka.ProducerMessage;
-import akka.kafka.ProducerSettings;
-import akka.kafka.Subscriptions;
+import akka.kafka.*;
 import akka.kafka.javadsl.Consumer;
 import akka.kafka.javadsl.Producer;
 import akka.stream.javadsl.Flow;
@@ -16,8 +13,6 @@ import akka.stream.javadsl.Source;
 import alpakkeer.config.KafkaMessagingAdapterConfiguration;
 import alpakkeer.core.stream.Record;
 import alpakkeer.core.stream.context.CommittableRecordContext;
-import alpakkeer.core.stream.context.CommittableRecordContexts;
-import alpakkeer.core.stream.context.NoRecordContext;
 import alpakkeer.core.stream.context.RecordContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -27,10 +22,26 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.jdk.FutureConverters.FutureOps;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+
+/**
+ * The AlpakkeerKafkaCommitableRecordContext stores the original [ConsumerMessage.CommitableOffset] from kafka
+ * and commits the message once commit is called.
+ */
+@AllArgsConstructor(staticName = "apply")
+class AlpakkeerKafkaCommitableRecordContext implements CommittableRecordContext {
+
+    ConsumerMessage.CommittableOffset committableOffset;
+
+    @Override
+    public CompletionStage<Done> commit() {
+       return new FutureOps<Done>(committableOffset.commitInternal()).asJava();
+    }
+}
 
 @AllArgsConstructor(staticName = "apply")
 public final class PlainKafkaStreamMessagingAdapter implements StreamMessagingAdapter {
@@ -90,19 +101,24 @@ public final class PlainKafkaStreamMessagingAdapter implements StreamMessagingAd
       return CompletableFuture.completedFuture(Optional.empty());
    }
 
-   @Override
-   @SuppressWarnings("unchecked")
-   public <T> Source<Record<T, CommittableRecordContext>, NotUsed> recordsSource(String topic, Class<T> recordType, String consumerGroup) {
-      var settings = ConsumerSettings.create(configuration.getConsumer(), new StringDeserializer(), new StringDeserializer())
-         .withBootstrapServers(configuration.getBootstrapServer())
-         .withGroupId(consumerGroup)
-         .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Source<Record<T, CommittableRecordContext>, NotUsed> recordsSource(String topic, Class<T> recordType, String consumerGroup) {
+        var consumerSettings = ConsumerSettings.create(configuration.getConsumer(), new StringDeserializer(), new StringDeserializer())
+                .withBootstrapServers(configuration.getBootstrapServer())
+                .withGroupId(consumerGroup)
+                .withProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-      return Consumer
-         .plainSource(settings, Subscriptions.topics(topic))
-         .mapMaterializedValue(c -> NotUsed.getInstance())
-         .map(record -> (Record<T, NoRecordContext>) om.readValue(record.value(), Record.class))
-         .map(record -> record.withContext(CommittableRecordContexts.createFromRunnable(() -> {
-         })));
-   }
+        var committerSettings = CommitterSettings.create(configuration.getCommitter());
+
+        return Consumer
+                .committableSource(consumerSettings, Subscriptions.topics(topic))
+                .mapMaterializedValue(mat -> NotUsed.getInstance())
+                .map(committableMessage -> (Record<T, CommittableRecordContext>) om
+                        .readValue(committableMessage.record().value(), Record.class)
+                        .withContext(AlpakkeerKafkaCommitableRecordContext.apply(
+                                committableMessage.committableOffset()
+                        ))
+                );
+    }
 }

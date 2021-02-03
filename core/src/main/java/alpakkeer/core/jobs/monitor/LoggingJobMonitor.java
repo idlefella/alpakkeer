@@ -2,7 +2,6 @@ package alpakkeer.core.jobs.monitor;
 
 import alpakkeer.core.stream.CheckpointMonitor;
 import alpakkeer.core.stream.LatencyMonitor;
-import alpakkeer.core.util.ObjectMapperFactory;
 import alpakkeer.core.util.Operators;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -22,8 +21,22 @@ public final class LoggingJobMonitor<P, C> implements JobMonitor<P, C> {
 
    private final ObjectMapper om;
 
+   /**
+    * Whether to log the result of the stream or not
+    */
+   private final Boolean logResult;
+
+   /**
+    * Whether to log the statistics of the stream or not
+    */
+   private final Boolean logStatistics;
+
+   public static <P, C> LoggingJobMonitor<P, C> apply(String name, Logger log, ObjectMapper om) {
+      return apply(name, log, om, false, false);
+   }
+
    public static <P, C> LoggingJobMonitor<P, C> apply(String name, ObjectMapper om) {
-      return apply(name, LoggerFactory.getLogger(String.format("alpakkeer.jobs.%s", name)), om);
+      return apply(name, LoggerFactory.getLogger(String.format("alpakkeer.jobs.%s", name)), om, false, false);
    }
 
    @Override
@@ -51,7 +64,7 @@ public final class LoggingJobMonitor<P, C> implements JobMonitor<P, C> {
       log.info(
          "Execution `{}` of job `{}` finished successfully with result:\n{}",
          executionId, name,
-         Operators.ignoreExceptionsWithDefault(() -> om.writeValueAsString(result), String.valueOf(result)));
+         logResult ? Operators.ignoreExceptionsWithDefault(() -> om.writeValueAsString(result), String.valueOf(result)) : "suppressed");
    }
 
    @Override
@@ -61,12 +74,14 @@ public final class LoggingJobMonitor<P, C> implements JobMonitor<P, C> {
 
    @Override
    public void onStats(String executionId, String name, CheckpointMonitor.Stats statistics) {
-      log.info("{} / {} / {}", executionId, name, statistics);
+      if(logStatistics)
+         log.info("{} / {} / {}", executionId, name, statistics);
    }
 
    @Override
    public void onStats(String executionId, String name, LatencyMonitor.Stats statistics) {
-      log.info("{} / {} / {}", executionId, name, statistics);
+      if(logStatistics)
+         log.info("{} / {} / {}", executionId, name, statistics);
    }
 
    @Override

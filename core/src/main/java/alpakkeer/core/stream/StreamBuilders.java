@@ -24,6 +24,8 @@ public final class StreamBuilders {
 
       private final Logger logger;
 
+      private final String name;
+
       public StreamMonitoringAdapter monitoring() {
          return monitoring;
       }
@@ -41,14 +43,20 @@ public final class StreamBuilders {
          return logger;
       }
 
+      @Override
+      public String getName() {
+         return name;
+      }
+
    }
 
    public static StreamBuilder common(
       StreamMonitoringAdapter monitoring,
       AlpakkeerRuntime runtime,
-      Logger logger) {
+      Logger logger,
+      String name) {
 
-      return CommonStreamBuilder.apply(monitoring, runtime.getMessaging(), runtime, logger);
+      return CommonStreamBuilder.apply(monitoring, runtime.getMessaging(), runtime, logger, name);
    }
 
 }

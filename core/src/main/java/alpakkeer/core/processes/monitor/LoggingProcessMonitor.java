@@ -20,8 +20,17 @@ public final class LoggingProcessMonitor implements ProcessMonitor {
 
    private final Logger log;
 
+   /**
+    * Whether to log the statistics of the stream or not
+    */
+   private final Boolean logStatistics;
+
    public static LoggingProcessMonitor apply(String name) {
-      return apply(name, LoggerFactory.getLogger(String.format("alpakkeer.processes.%s", name)));
+      return apply(name, LoggerFactory.getLogger(String.format("alpakkeer.processes.%s", name)), false);
+   }
+
+   public static LoggingProcessMonitor apply(String name, Logger log) {
+      return apply(name, log, false);
    }
 
    @Override
@@ -45,12 +54,14 @@ public final class LoggingProcessMonitor implements ProcessMonitor {
 
    @Override
    public void onStats(String executionId, String name, CheckpointMonitor.Stats statistics) {
-      log.info("{} / {} / {}", executionId, name, statistics);
+      if(logStatistics)
+         log.info("{} / {} / {}", executionId, name, statistics);
    }
 
    @Override
    public void onStats(String executionId, String name, LatencyMonitor.Stats statistics) {
-      log.info("{} / {} / {}", executionId, name, statistics);
+      if(logStatistics)
+         log.info("{} / {} / {}", executionId, name, statistics);
    }
 
    @Override
