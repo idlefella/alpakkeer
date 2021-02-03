@@ -1,15 +1,22 @@
 package alpakkeer.core.util;
 
 import alpakkeer.config.ObjectMapperConfiguration;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.scala.DefaultScalaModule;
+
+import java.util.Map;
+
+abstract class ExceptionMixIn {
+
+    @JsonIdentityInfo(generator = ObjectIdGenerators.StringIdGenerator.class, property = "$id")
+    private Throwable cause;
+
+}
 
 public final class ObjectMapperFactory {
 
@@ -31,6 +38,7 @@ public final class ObjectMapperFactory {
         om.registerModule(new JavaTimeModule());
         om.registerModule(new Jdk8Module());
         om.registerModule(new DefaultScalaModule());
+        om.setMixIns(Map.of(Throwable.class, ExceptionMixIn.class));
 
         om.getSerializationConfig()
                 .getDefaultVisibilityChecker()
